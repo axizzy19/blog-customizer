@@ -1,6 +1,7 @@
 import arrow from 'src/images/arrow.svg';
 import styles from './ArrowButton.module.scss';
 import clsx from 'clsx';
+// import { useState } from 'react';
 
 /** Функция для обработки открытия/закрытия формы */
 export type OnClick = () => void;
@@ -10,7 +11,10 @@ interface PropsArrowButton {
 	openState: boolean;
 }
 
-export const ArrowButton = ({toggleOpenFunc, openState}: PropsArrowButton) => {
+export const ArrowButton = ({
+	toggleOpenFunc,
+	openState,
+}: PropsArrowButton) => {
 	return (
 		/* Не забываем указаывать role и aria-label атрибуты для интерактивных элементов */
 		<div
@@ -21,15 +25,15 @@ export const ArrowButton = ({toggleOpenFunc, openState}: PropsArrowButton) => {
 			className={clsx({
 				[styles.container]: true,
 				[styles.container_open]: openState,
-			})}
-			>
-			<img 
+			})}>
+			<img
 				src={arrow}
 				alt='иконка стрелочки'
 				className={clsx({
 					[styles.arrow]: true,
-					[styles.arrow_open]: openState
-				})} />
+					[styles.arrow_open]: openState,
+				})}
+			/>
 		</div>
 	);
 };

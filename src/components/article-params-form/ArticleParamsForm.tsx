@@ -2,15 +2,20 @@ import { ArrowButton } from 'components/arrow-button';
 import { Button } from 'components/button';
 import { Text } from 'components/text';
 import { Select } from 'components/select';
-import { OnClick } from '../arrow-button/ArrowButton';
-import { useState } from 'react';
-import { OptionType, backgroundColors, contentWidthArr, fontColors, fontSizeOptions } from 'src/constants/articleProps';
-import { defaultArticleState, fontFamilyOptions } from 'src/constants/articleProps';
+import { useEffect, useRef, useState } from 'react';
+import {
+	OptionType,
+	backgroundColors,
+	contentWidthArr,
+	fontColors,
+	fontSizeOptions,
+	defaultArticleState,
+	fontFamilyOptions,
+} from 'src/constants/articleProps';
 import styles from './ArticleParamsForm.module.scss';
-import clsx from 'clsx'
+import clsx from 'clsx';
 import { RadioGroup } from '../radio-group';
 import { Separator } from '../separator';
-
 
 export interface IOptions {
 	fontFamilyOption: OptionType;
@@ -21,13 +26,17 @@ export interface IOptions {
 }
 
 interface PropsArticleParamsForm {
-	toggleOpenFunc: OnClick;
-	openState: boolean;
-	setPageState: React.Dispatch<React.SetStateAction<IOptions>>
+	setPageState: React.Dispatch<React.SetStateAction<IOptions>>;
 }
 
-export const ArticleParamsForm = ({toggleOpenFunc, openState, setPageState}: PropsArticleParamsForm) => {
+export const ArticleParamsForm = ({ setPageState }: PropsArticleParamsForm) => {
 	const [formState, setFormState] = useState<IOptions>(defaultArticleState);
+	const [isOpen, setIsOpen] = useState<boolean>(false);
+	const rootRef = useRef<HTMLDivElement>(null);
+
+	function toggleOpen() {
+		setIsOpen((prevState) => !prevState);
+	}
 
 	function setDefaultOptions() {
 		setFormState(defaultArticleState);
@@ -39,15 +48,37 @@ export const ArticleParamsForm = ({toggleOpenFunc, openState, setPageState}: Pro
 		setPageState(formState);
 	}
 
+	useEffect(() => {
+		const handleClick = (event: MouseEvent) => {
+			const { target } = event;
+			if (target instanceof Node && !rootRef.current?.contains(target)) {
+				setIsOpen(false);
+			}
+		};
+
+		if (!isOpen) {
+			return () => {
+				window.addEventListener('mousedown', handleClick);
+			};
+		}
+
+		return () => {
+			window.removeEventListener('click', handleClick);
+		};
+	}, []);
+
 	return (
-		<>
-			<ArrowButton toggleOpenFunc={toggleOpenFunc} openState={openState}/>
-			<aside className={clsx({
-				[styles.container]: true,
-				[styles.container_open]: openState
-			})}>
+		<div ref={rootRef}>
+			<ArrowButton toggleOpenFunc={toggleOpen} openState={isOpen} />
+			<aside
+				className={clsx({
+					[styles.container]: true,
+					[styles.container_open]: isOpen,
+				})}>
 				<form className={styles.form} onSubmit={confirmOptions}>
-					<Text as='h1' size={31} weight={800} uppercase dynamicLite>Задайте параметры</Text>
+					<Text as='h1' size={31} weight={800} uppercase>
+						Задайте параметры
+					</Text>
 					<Select
 						title='шрифт'
 						options={fontFamilyOptions}
@@ -56,8 +87,8 @@ export const ArticleParamsForm = ({toggleOpenFunc, openState, setPageState}: Pro
 							setFormState((prevState) => ({
 								...prevState,
 								fontFamilyOption: selected,
-						}))}>
-					</Select>
+							}))
+						}></Select>
 					<RadioGroup
 						title='размер шрифта'
 						options={fontSizeOptions}
@@ -66,10 +97,9 @@ export const ArticleParamsForm = ({toggleOpenFunc, openState, setPageState}: Pro
 						onChange={(selected) =>
 							setFormState((prevState) => ({
 								...prevState,
-								fontSizeOption: selected
+								fontSizeOption: selected,
 							}))
-						}>
-					</RadioGroup>
+						}></RadioGroup>
 					<Select
 						title='цвет шрифта'
 						options={fontColors}
@@ -77,11 +107,10 @@ export const ArticleParamsForm = ({toggleOpenFunc, openState, setPageState}: Pro
 						onChange={(selected) =>
 							setFormState((prevState) => ({
 								...prevState,
-								fontColor: selected
+								fontColor: selected,
 							}))
-						}>
-					</Select>
-					<Separator/>
+						}></Select>
+					<Separator />
 					<Select
 						title='цвет фона'
 						options={backgroundColors}
@@ -89,11 +118,9 @@ export const ArticleParamsForm = ({toggleOpenFunc, openState, setPageState}: Pro
 						onChange={(selected) =>
 							setFormState((prevState) => ({
 								...prevState,
-								backgroundColor: selected
+								backgroundColor: selected,
 							}))
-						}
-					>
-					</Select>
+						}></Select>
 					<Select
 						title='ширина контента'
 						options={contentWidthArr}
@@ -101,16 +128,15 @@ export const ArticleParamsForm = ({toggleOpenFunc, openState, setPageState}: Pro
 						onChange={(selected) =>
 							setFormState((prevState) => ({
 								...prevState,
-								contentWidth:selected
+								contentWidth: selected,
 							}))
-						}
-					></Select>
+						}></Select>
 					<div className={styles.bottomContainer}>
-						<Button title='Сбросить' type='reset' onClick={setDefaultOptions}/>
-						<Button title='Применить' type='submit'/>
+						<Button title='Сбросить' type='reset' onClick={setDefaultOptions} />
+						<Button title='Применить' type='submit' />
 					</div>
 				</form>
 			</aside>
-		</>
+		</div>
 	);
 };
